@@ -72,17 +72,17 @@ async def demonstrate():
         print_info(f"  Модуль p = {p}:")
         for a in test_values:
             try:
-                legendre = CipherService.legendre_symbol(a, p, primality_tester)
-                status = "квадратичный вычет" if legendre == 1 else "квадратичный невычет" if legendre == -1 else "делится на p"
-                print_info(f"    ({a}/{p}) = {legendre} - {status}")
+                L = CipherService.Legendre_symbol(a, p, primality_tester)
+                status = "квадратичный вычет" if L == 1 else "квадратичный невычет" if L == -1 else "делится на p"
+                print_info(f"    ({a}/{p}) = {L} - {status}")
             except ValueError as e:
                 print_error(f"    Ошибка для ({a}/{p}): {e}")
     
     # Демонстрация ошибки для составного числа
     print_info("  Проверка на составном числе:")
     try:
-        legendre = CipherService.legendre_symbol(2, 15, primality_tester)
-        print_error(f"    ОШИБКА: (2/15) = {legendre} (но 15 составное!)")
+        L = CipherService.Legendre_symbol(2, 15, primality_tester)
+        print_error(f"    ОШИБКА: (2/15) = {L} (но 15 составное!)")
     except ValueError as e:
         print_success(f"    Корректная ошибка: {e}")
 

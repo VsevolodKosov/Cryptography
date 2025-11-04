@@ -91,7 +91,7 @@ class CipherService:
         return result if n_val == 1 else 0
     
     @staticmethod 
-    def legendre_symbol(a: int, p: int, primality_tester) -> int:
+    def Legendre_symbol(a: int, p: int, primality_tester) -> int:
         # Проверка что p - простое число
         if not primality_tester.is_primary(p, 0.99):
             raise ValueError("p должно быть простым числом")
