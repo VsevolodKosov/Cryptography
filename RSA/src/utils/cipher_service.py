@@ -52,9 +52,8 @@ class CipherService:
         if n < 2:
             raise ValueError("N должен быть не меньше двух")
         if n % 2 == 0:
-            raise ValueError("N должен быть четным")
+            raise ValueError("N должен быть нечетным")
         
-        # Проверка взаимной простоты
         if CipherService.gcd(a, n) != 1:
             return 0
         
@@ -62,37 +61,31 @@ class CipherService:
         a_val = a
         n_val = n
         
-        # Обработка отрицательного a
         if a_val < 0:
             a_val = -a_val
             if n_val % 4 == 3:
                 result *= -1
         
         while a_val != 0:
-            # Вынесение степеней двойки из a_val
             t = 0
             while a_val % 2 == 0:
                 t += 1
                 a_val //= 2
             
-            # Обработка вынесенных двоек
             if t % 2 == 1:
                 mod8 = n_val % 8
                 if mod8 == 3 or mod8 == 5:
                     result *= -1
             
-            # Квадратичный закон взаимности
             if a_val % 4 == 3 and n_val % 4 == 3:
                 result *= -1
             
-            # "Переворот" аргументов
             a_val, n_val = n_val % a_val, a_val
         
         return result if n_val == 1 else 0
     
     @staticmethod 
     def Legendre_symbol(a: int, p: int, primality_tester) -> int:
-        # Проверка что p - простое число
         if not primality_tester.is_primary(p, 0.99):
             raise ValueError("p должно быть простым числом")
         

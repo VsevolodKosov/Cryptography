@@ -11,6 +11,9 @@ class SolovayStrassenTest(BasePrimalityTest):
             return False
         
         J = CipherService.Jacobi_symbol(a, n)
+        if J == 0:
+            return False
+    
         exp = (n - 1) // 2
         power = CipherService.mod_pow(a, exp, n)
         

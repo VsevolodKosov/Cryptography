@@ -1,5 +1,4 @@
 import secrets
-import asyncio
 from typing import Tuple
 from src.cipher.interface import RSAKeyPair, RSAKeyGeneratorConfig, PrimalityTestType
 from src.utils.primality.base import PrimalityInterface
@@ -25,109 +24,59 @@ class RSAKeyGenerator:
             raise ValueError(f"Неизвестный тип теста: {test_type}")
     
     def _generate_prime_candidate(self) -> int:
-        min_val = 1 << (self.config.bit_length - 1)
-        max_val = (min_val << 1) - 1
-        
-        range_size = max_val - min_val + 1
-        random_bytes = secrets.token_bytes(256)
-        
-        result = 0
-        for byte in random_bytes:
-            result = (result << 8) | byte
-        
-        candidate = min_val + (result % range_size)
+        candidate = secrets.randbits(self.config.bit_length)
+        candidate |= (1 << (self.config.bit_length - 1))
         candidate |= 1
-        
-        set_mask = 0xFF << (self.config.bit_length - 8)
-        candidate |= set_mask
+        candidate |= (1 << (self.config.bit_length - 2))
         
         return candidate
     
-    async def _generate_prime(self) -> int:
+    def _generate_prime(self) -> int:
         while True:
             candidate = self._generate_prime_candidate()
             if self.test.is_primary(candidate, self.config.min_probability):
                 return candidate
     
-    def _is_fermat_attack_resistant(self, p: int, q: int) -> bool:
-        n = p * q
-        min_diff = AttacksService.sqrt(AttacksService.sqrt(n)) * 2
-        diff = abs(p - q)
-        return diff > min_diff
-    
-    def _is_wiener_attack_resistant(self, d: int, n: int) -> bool:
-        n_sqrt = AttacksService.sqrt(AttacksService.sqrt(n))
-        return d * 3 > n_sqrt
-    
-    async def _generate_prime_pair(self) -> Tuple[int, int]:
+    def _generate_prime_pair(self) -> Tuple[int, int]:
         p, q = 0, 0
-        attempts = 0
-        max_attempts = 100
+        attempts = 100
         
         while True:
-            if attempts > max_attempts:
+            if attempts == 0:
                 raise ValueError("Не удалось сгенерировать устойчивую пару простых чисел")
             
-            attempts += 1
-            p, q = await asyncio.gather(
-                self._generate_prime(),
-                self._generate_prime()
-            )
-            
-            if (p != q and 
-                CipherService.gcd(p, q) == 1 and 
-                self._is_fermat_attack_resistant(p, q)):
+            attempts -= 1
+            p, q = self._generate_prime(), self._generate_prime()
+
+            if self._is_fermat_attack_resistant(p, q):
                 break
         
         return p, q
     
-    async def generate_key_pair(self) -> RSAKeyPair:
-        p, q = await self._generate_prime_pair()
-        modulus = p * q
-        phi = (p - 1) * (q - 1)
+    def generate_key_pair(self) -> RSAKeyPair:
+        e = 65537
+
+        while True:  
+            p, q = self._generate_prime_pair()
+            modulus = p * q
+            phi = (p - 1) * (q - 1)
+            
+            if CipherService.gcd(e, phi) != 1:
+                continue
+            
+            gcd_val, x, y = CipherService.extended_gcd(e, phi)
+            d = ((x % phi) + phi) % phi  
         
-        standard_exponents = [65537, 257, 17]
-        public_exponent = 65537
-        private_exponent = None
-        
-        for e in standard_exponents:
-            if CipherService.gcd(e, phi) == 1:
-                gcd_val, x, y = CipherService.extended_gcd(e, phi)
-                d = ((x % phi) + phi) % phi
-                
-                if self._is_wiener_attack_resistant(d, modulus):
-                    public_exponent = e
-                    private_exponent = d
-                    break
-        
-        if private_exponent is None:
-            while True:
-                range_size = phi - 3 + 1
-                random_bytes = secrets.token_bytes(128)
-                
-                e = 0
-                for byte in random_bytes:
-                    e = (e << 8) | byte
-                
-                e = 3 + (e % range_size)
-                e |= 1
-                
-                if CipherService.gcd(e, phi) == 1:
-                    gcd_val, x, y = CipherService.extended_gcd(e, phi)
-                    d = ((x % phi) + phi) % phi
-                    
-                    if self._is_wiener_attack_resistant(d, modulus):
-                        public_exponent = e
-                        private_exponent = d
-                        break
-        
-        return {
-            'public_key': {'exponent': public_exponent, 'modulus': modulus},
-            'private_key': {'exponent': private_exponent, 'modulus': modulus}
-        }
+            if not self._is_wiener_attack_resistant(d, modulus):
+                continue
+            
+            return {
+                'public_key': {'exponent': e, 'modulus': modulus},
+                'private_key': {'exponent': d, 'modulus': modulus}
+            }
     
-    async def generate_weak_key_pair(self) -> RSAKeyPair:
-        p, q = await self._generate_prime_pair()
+    def generate_weak_key_pair(self) -> RSAKeyPair:
+        p, q = self._generate_prime_pair()
         modulus = p * q
         phi = (p - 1) * (q - 1)
         
@@ -154,8 +103,8 @@ class RSAKeyGenerator:
             'private_key': {'exponent': d, 'modulus': modulus}
         }
     
-    async def generate_weak_key_pair_for_fermat(self) -> RSAKeyPair:
-        p = await self._generate_prime()
+    def generate_weak_key_pair_for_fermat(self) -> RSAKeyPair:
+        p = self._generate_prime()
         q = 0
         diff = 1 << 20
         attempts = 0
@@ -163,7 +112,7 @@ class RSAKeyGenerator:
         while True:
             attempts += 1
             if attempts > 100:
-                p = await self._generate_prime()
+                p = self._generate_prime()
                 attempts = 0
             
             q = p + diff
@@ -184,3 +133,13 @@ class RSAKeyGenerator:
             'public_key': {'exponent': public_exponent, 'modulus': modulus},
             'private_key': {'exponent': private_exponent, 'modulus': modulus}
         }
+    
+    def _is_fermat_attack_resistant(self, p: int, q: int) -> bool:
+        n = p * q
+        min_diff = AttacksService.sqrt(AttacksService.sqrt(n)) * 2
+        diff = abs(p - q)
+        return diff > min_diff
+    
+    def _is_wiener_attack_resistant(self, d: int, n: int) -> bool:
+        n_sqrt = AttacksService.sqrt(AttacksService.sqrt(n))
+        return d * 3 > n_sqrt

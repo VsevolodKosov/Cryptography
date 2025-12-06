@@ -1,4 +1,3 @@
-import asyncio
 from src.cipher.crypto_service import RSACryptoService
 from src.cipher.interface import PrimalityTestType
 from attacks.Wienner_attack import WienerAttack
@@ -24,12 +23,10 @@ def print_info(message: str):
     print(f"ИНФО: {message}")
 
 
-async def demonstrate():
+def demonstrate():
     
-    # 1. Генерация ключевой пары RSA
     print_section("1. ГЕНЕРАЦИЯ КЛЮЧЕВОЙ ПАРЫ RSA")
     
-    # Создаем класс для конфигурации
     class Config:
         def __init__(self, test_type, min_probability, bit_length):
             self.test_type = test_type
@@ -49,7 +46,7 @@ async def demonstrate():
     print_info("   • Вероятность: 99.9%")
     print_info("   • Длина ключа: 256 бит")
     
-    await rsa_service.generate_key_pair()
+    rsa_service.generate_key_pair()
     print_success("Ключевая пара успешно сгенерирована!")
     
     public_key = rsa_service.get_public_key()
@@ -58,12 +55,10 @@ async def demonstrate():
         print_info(f"   • Модуль (n): {public_key['modulus']}")
         print_info(f"   • Экспонента (e): {public_key['exponent']}")
 
-    # 2. Демонстрация символа Лежандра
     print_section("2. ДЕМОНСТРАЦИЯ СИМВОЛА ЛЕЖАНДРА")
     
     primality_tester = MillerRabinTest()
     
-    # Простые числа для демонстрации
     primes = [7, 11, 17, 23]
     test_values = [2, 3, 5, 7]
     
@@ -78,7 +73,6 @@ async def demonstrate():
             except ValueError as e:
                 print_error(f"    Ошибка для ({a}/{p}): {e}")
     
-    # Демонстрация ошибки для составного числа
     print_info("  Проверка на составном числе:")
     try:
         L = CipherService.Legendre_symbol(2, 15, primality_tester)
@@ -86,7 +80,6 @@ async def demonstrate():
     except ValueError as e:
         print_success(f"    Корректная ошибка: {e}")
 
-    # 3. Шифрование и дешифрование
     print_section("3. ТЕСТИРОВАНИЕ ШИФРОВАНИЯ И ДЕШИФРОВАНИЯ")
     test_data = 12345678901234567890
     print_info(f"Исходные данные: {test_data}")
@@ -105,7 +98,6 @@ async def demonstrate():
     except Exception as error:
         print_error(f"Ошибка при шифровании: {error}")
 
-    # 4. Проверка устойчивости к атаке Винера
     print_section("4. ПРОВЕРКА УСТОЙЧИВОСТИ К АТАКЕ ВИНЕРА")
     attack_result = WienerAttack.attack(rsa_service)
     
@@ -118,10 +110,9 @@ async def demonstrate():
     else:
         print_error("Ключ УЯЗВИМ к атаке Винера!")
 
-    # 5. Демонстрация атаки Винера на слабый ключ
     print_section("5. ДЕМОНСТРАЦИЯ АТАКИ ВИНЕРА НА СЛАБЫЙ КЛЮЧ")
     print_info("Генерация специально ослабленного ключа...")
-    await rsa_service.generate_weak_key_pair()
+    rsa_service.generate_weak_key_pair()
     
     weak_attack_result = WienerAttack.attack(rsa_service)
     
@@ -136,7 +127,6 @@ async def demonstrate():
     else:
         print_success("Даже слабый ключ оказался устойчивым!")
 
-    # 6. Демонстрация атаки Ферма
     print_section("6. ДЕМОНСТРАЦИЯ АТАКИ ФЕРМА")
     print_info("Создание сервиса с малым ключом для демонстрации...")
     
@@ -149,7 +139,7 @@ async def demonstrate():
     weak_rsa = RSACryptoService(weak_config)
     
     print_info("Генерация ключа с близкими простыми числами...")
-    await weak_rsa.generate_weak_key_pair_for_fermat()
+    weak_rsa.generate_weak_key_pair_for_fermat()
     
     weak_public_key = weak_rsa.get_public_key()
     if weak_public_key:
@@ -170,7 +160,6 @@ async def demonstrate():
             print_info(f"   • Проверка: p * q = {fermat_result['factors'][0] * fermat_result['factors'][1]}")
             print_info(f"   • Исходный модуль: {weak_public_key['modulus']}")
 
-    # 7. Проверка нормального ключа на уязвимость к Ферма
     print_section("7. ПРОВЕРКА НОРМАЛЬНОГО КЛЮЧА НА УЯЗВИМОСТЬ")
     normal_public_key = rsa_service.get_public_key()
     if normal_public_key:
@@ -183,7 +172,6 @@ async def demonstrate():
         else:
             print_error("Нормальный ключ УЯЗВИМ к атаке Ферма!")
 
-    # Итоговый вывод
     print_section("ИТОГИ ДЕМОНСТРАЦИИ")
     print_info("Все компоненты системы работают корректно:")
     print_info("   • Математические функции (Лежандра, Якоби, НОД)")
@@ -195,10 +183,9 @@ async def demonstrate():
     print_info("   • Защита от атак в нормальных ключах")
 
 
-# Обработка ошибок
 if __name__ == "__main__":
     try:
-        asyncio.run(demonstrate())
+        demonstrate()
     except Exception as error:
         print_error(f"Критическая ошибка: {error}")
         import traceback
