@@ -2,7 +2,7 @@
 
 from typing import Literal
 from src.galois.types import IGaloisFieldService
-from src.aes_rijndael.types import IRoundTransformations, ISBoxProvider, RoundKeys
+from src.aes_rijndael.types import ISBoxProvider, RoundKeys
 from src.utils.state_utils import state_index, get_shift_offsets
 
 

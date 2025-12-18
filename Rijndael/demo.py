@@ -1,4 +1,3 @@
-
 import sys
 from pathlib import Path
 
@@ -9,7 +8,7 @@ from src.utils.modes_utils import random_bytes, bytes_to_hex
 
 def print_section(title: str) -> None:
     print("\n" + "=" * 80)
-    print(f"  {title}")
+    print(f"   {title}")
     print("=" * 80 + "\n")
 
 
@@ -22,7 +21,7 @@ def demo_random_bytes_encryption() -> None:
     cipher = RijndaelCipher({"nb": 4, "gf": gf})
     key = random_bytes(16)
     iv = random_bytes(16)
-    cipher.expand_key(key, 4)
+    cipher.expand_key(key) 
     
     for size in sizes:
         print(f"Размер данных: {size} байт")
@@ -67,7 +66,8 @@ def demo_file_encryption(file_path: str, file_type: str = "text") -> None:
     cipher = RijndaelCipher({"nb": 4, "gf": gf})
     key = random_bytes(16)
     iv = random_bytes(16)
-    cipher.expand_key(key, 4)
+    # ИСПРАВЛЕНИЕ: Удален лишний аргумент '4'.
+    cipher.expand_key(key) 
     
     ctx = CryptoContext(
         cipher=cipher,
@@ -96,7 +96,8 @@ def demo_cipher_modes() -> None:
     gf = GaloisFieldService()
     cipher = RijndaelCipher({"nb": 4, "gf": gf})
     key = random_bytes(16)
-    cipher.expand_key(key, 4)
+    # ИСПРАВЛЕНИЕ: Удален лишний аргумент '4'.
+    cipher.expand_key(key) 
     
     modes = [
         (CipherMode.ECB, None),
@@ -122,11 +123,11 @@ def demo_cipher_modes() -> None:
             decrypted = ctx.decrypt(encrypted)
             
             if data == decrypted:
-                print(f"  ✓ Успешно: {len(encrypted)} байт зашифровано")
+                print(f"   ✓ Успешно: {len(encrypted)} байт зашифровано")
             else:
                 print("✗ Ошибка: данные не совпадают")
         except Exception as e:
-            print(f"  ✗ Ошибка: {e}")
+            print(f"   ✗ Ошибка: {e}")
         print()
 
 
@@ -143,7 +144,8 @@ def demo_padding_modes() -> None:
     cipher = RijndaelCipher({"nb": 4, "gf": gf})
     key = random_bytes(16)
     iv = random_bytes(16)
-    cipher.expand_key(key, 4)
+    # ИСПРАВЛЕНИЕ: Удален лишний аргумент '4'.
+    cipher.expand_key(key) 
     
     padding_modes = [
         PaddingMode.Zeros,
@@ -168,11 +170,11 @@ def demo_padding_modes() -> None:
                 decrypted = ctx.decrypt(encrypted)
                 
                 if data == decrypted:
-                    print(f"  {padding_mode.value:15} ✓ Успешно (размер: {len(encrypted)} байт)")
+                    print(f"   {padding_mode.value:15} ✓ Успешно (размер: {len(encrypted)} байт)")
                 else:
-                    print(f"  {padding_mode.value:15} ✗ Ошибка")
+                    print(f"   {padding_mode.value:15} ✗ Ошибка")
             except Exception as e:
-                print(f"  {padding_mode.value:15} ✗ Ошибка: {e}")
+                print(f"   {padding_mode.value:15} ✗ Ошибка: {e}")
         print()
 
 
@@ -200,7 +202,8 @@ def demo_block_and_key_sizes() -> None:
             cipher = RijndaelCipher({"nb": nb, "gf": gf})
             key = random_bytes(nk * 4)
             iv = random_bytes(nb * 4)
-            cipher.expand_key(key, nk)
+            # Здесь аргумент 'nk' остается, так как он варьируется в цикле.
+            cipher.expand_key(key, nk) 
             
             ctx = CryptoContext(
                 cipher=cipher,
@@ -213,11 +216,11 @@ def demo_block_and_key_sizes() -> None:
             decrypted = ctx.decrypt(encrypted)
             
             if data == decrypted:
-                print(f"  ✓ Успешно: блок {nb*4} байт, ключ {nk*4} байт")
+                print(f"   ✓ Успешно: блок {nb*4} байт, ключ {nk*4} байт")
             else:
-                print("  ✗ Ошибка: данные не совпадают")
+                print("   ✗ Ошибка: данные не совпадают")
         except Exception as e:
-            print(f"  ✗ Ошибка: {e}")
+            print(f"   ✗ Ошибка: {e}")
         print()
 
 
@@ -241,7 +244,8 @@ def demo_irreducible_polynomials() -> None:
             cipher = RijndaelCipher({"nb": 4, "gf": gf})
             key = random_bytes(16)
             iv = random_bytes(16)
-            cipher.expand_key(key, 4)
+            # ИСПРАВЛЕНИЕ: Удален лишний аргумент '4'.
+            cipher.expand_key(key) 
             
             ctx = CryptoContext(
                 cipher=cipher,
@@ -254,17 +258,17 @@ def demo_irreducible_polynomials() -> None:
             decrypted = ctx.decrypt(encrypted)
             
             if data == decrypted:
-                print(f"  ✓ Успешно: полином 0x{poly:03x}")
+                print(f"   ✓ Успешно: полином 0x{poly:03x}")
             else:
-                print("  ✗ Ошибка: данные не совпадают")
+                print("   ✗ Ошибка: данные не совпадают")
         except Exception as e:
-            print(f"  ✗ Ошибка: {e}")
+            print(f"   ✗ Ошибка: {e}")
         print()
     
     print(f"Всего неприводимых полиномов степени 8: {len(IRREDUCIBLE_POLYNOMIALS_8)}")
     print("Список всех полиномов:")
     for i, poly in enumerate(IRREDUCIBLE_POLYNOMIALS_8, 1):
-        print(f"  {i:2}. 0x{poly:03x}", end="  ")
+        print(f"   {i:2}. 0x{poly:03x}", end="   ")
         if i % 5 == 0:
             print()
     if len(IRREDUCIBLE_POLYNOMIALS_8) % 5 != 0:
@@ -350,7 +354,8 @@ def demo_comprehensive() -> None:
             cipher = RijndaelCipher({"nb": combo["nb"], "gf": gf})
             key = random_bytes(combo["nk"] * 4)
             iv = random_bytes(combo["nb"] * 4) if combo["mode"] != CipherMode.ECB else None
-            cipher.expand_key(key, combo["nk"])
+            # Здесь nk корректно передается, так как он меняется в цикле.
+            cipher.expand_key(key, combo["nk"]) 
             
             ctx = CryptoContext(
                 cipher=cipher,
@@ -363,17 +368,17 @@ def demo_comprehensive() -> None:
             decrypted = ctx.decrypt(encrypted)
             
             if data == decrypted:
-                print(f"  ✓ Успешно: {len(encrypted)} байт зашифровано")
+                print(f"   ✓ Успешно: {len(encrypted)} байт зашифровано")
             else:
-                print("  ✗ Ошибка: данные не совпадают")
+                print("   ✗ Ошибка: данные не совпадают")
         except Exception as e:
-            print(f"  ✗ Ошибка: {e}")
+            print(f"   ✗ Ошибка: {e}")
         print()
 
 
 def main() -> None:
     print("\n" + "=" * 80)
-    print("  ДЕМОНСТРАЦИЯ РАБОТЫ АЛГОРИТМА RIJNDAEL/AES")
+    print("   ДЕМОНСТРАЦИЯ РАБОТЫ АЛГОРИТМА RIJNDAEL/AES")
     print("=" * 80)
     
     try:
@@ -403,4 +408,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

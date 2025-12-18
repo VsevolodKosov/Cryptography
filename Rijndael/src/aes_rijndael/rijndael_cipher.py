@@ -53,20 +53,18 @@ class RijndaelCipher:
         return self._nb * 4
     
     def expand_key(
-        self, 
-        key_in: bytes, 
-        nk: Literal[4, 6, 8] | None = None
-    ) -> RoundKeys:
-        """Expand key into round keys"""
-        rk = self._key_expansion.expand_key(
-            key_in, 
-            self._nb, 
-            nk, 
-            self._strict_sizes
-        )
-        self._rk = rk
-        return rk
-    
+            self, 
+            key_in: bytes, 
+            nk: Literal[4, 6, 8] | None = None 
+        ) -> RoundKeys:
+            """Expand key into round keys"""
+            rk = self._key_expansion.expand_key(
+                key_in, 
+                self._nb
+            )
+            self._rk = rk
+            return rk
+        
     def set_round_keys(self, rk: RoundKeys) -> None:
         """Set round keys"""
         if rk.nb != self._nb:

@@ -1,7 +1,7 @@
 """Galois Field GF(2^8) service implementation"""
 
 from typing import Final
-from src.galois.types import GFElement, Polynomial, IGaloisFieldService
+from src.galois.types import GFElement, Polynomial
 from src.galois.constants import IRREDUCIBLE_POLYNOMIALS_8, AES_POLYNOMIAL
 from src.utils.bit_utils import BitUtils
 
